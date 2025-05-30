@@ -21,7 +21,13 @@ SYMBOLS = {
     'Nvidia': 'NVDA',
     'Meta': 'META'
 }
-
+# في app.py
+app.config.update(
+    SESSION_COOKIE_SECURE=True,
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE='Lax',
+    PERMANENT_SESSION_LIFETIME=timedelta(days=31)
+    
 @app.route('/')
 def index():
     return render_template('index.html', symbols=SYMBOLS)
@@ -97,3 +103,6 @@ def get_stock_data():
 if __name__ == '__main__':
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
     serve(app, host='0.0.0.0', port=5000)
+@app.route('/health')
+def health():
+    return jsonify({'status': 'healthy'}), 200
