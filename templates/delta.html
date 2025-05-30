@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تحليل الدلتا</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/delta.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>تحليل الدلتا للأسهم والمؤشرات</h1>
+            <a href="/" class="back-btn">العودة للرئيسية</a>
+        </header>
+        
+        <div class="filters">
+            <a href="/delta?days=7" class="btn">أسبوع</a>
+            <a href="/delta?days=30" class="btn">شهر</a>
+            <a href="/delta?days=90" class="btn">3 أشهر</a>
+        </div>
+        
+        <table class="delta-table">
+            <thead>
+                <tr>
+                    <th>الاسم</th>
+                    <th>الرمز</th>
+                    <th>آخر سعر</th>
+                    <th>التغير (%)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in data %}
+                <tr>
+                    <td>{{ item.Name }}</td>
+                    <td>{{ item.Symbol }}</td>
+                    <td>{{ item['Last Price'] }}</td>
+                    <td class="{% if item['Delta (%)'] >= 0 %}positive{% else %}negative{% endif %}">
+                        {{ item['Delta (%)'] }}%
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

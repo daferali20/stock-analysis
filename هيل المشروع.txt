@@ -1,0 +1,17 @@
+1. هيكل المشروع النهائي
+stock_analysis_project/
+│
+├── app.py                # سيرفر Flask الرئيسي
+├── data_fetcher.py       # ملف جلب البيانات (كما سبق)
+├── templates/
+│   ├── index.html        # واجهة التحليل الرئيسية
+│   ├── delta.html        # صفحة تحليل الدلتا
+│   └── moving_avg.html   # صفحة المتوسطات المتحركة
+├── static/
+│   ├── css/
+│   │   ├── styles.css    # ملف CSS عام
+│   │   ├── delta.css     # تنسيقات صفحة الدلتا
+│   │   └── moving.css    # تنسيقات صفحة المتوسطات
+│   └── js/
+│       └── scripts.js    # ملف JavaScript للتفاعل
+└── requirements.txt      # ملف المتطلبات

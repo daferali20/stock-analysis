@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تحليل المتوسطات المتحركة</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/moving.css') }}">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>تحليل المتوسطات المتحركة لـ {{ symbol }}</h1>
+            <a href="/" class="back-btn">العودة للرئيسية</a>
+        </header>
+        
+        <div class="stock-info">
+            <div class="info-card">
+                <h3>السعر الحالي</h3>
+                <div class="info-value">{{ "%.2f"|format(current_price) }}</div>
+                {% set change = ((current_price - prev_close) / prev_close * 100) %}
+                <div class="change {% if change >= 0 %}up{% else %}down{% endif %}">
+                    {{ "%.2f"|format(change) }}%
+                </div>
+            </div>
+            
+            <div class="info-card">
+                <h3>50 يوم MA</h3>
+                <div class="info-value">{{ "%.2f"|format(ma_50) }}</div>
+            </div>
+            
+            <div class="info-card">
+                <h3>200 يوم MA</h3>
+                <div class="info-value">{{ "%.2f"|format(ma_200) }}</div>
+            </div>
+            
+            <div class="info-card">
+                <h3>أعلى سعر سنوي</h3>
+                <div class="info-value">{{ "%.2f"|format(year_high) }}</div>
+            </div>
+            
+            <div class="info-card">
+                <h3>أقل سعر سنوي</h3>
+                <div class="info-value">{{ "%.2f"|format(year_low) }}</div>
+            </div>
+        </div>
+        
+        <div id="chart" class="chart-container"></div>
+        
+        <div class="symbol-selector">
+            <form action="/moving_avg" method="get">
+                <select name="symbol">
+                    {% for stock in available_stocks %}
+                    <option value="{{ stock.symbol }}" {% if stock.symbol == symbol %}selected{% endif %}>{{ stock.name }}</option>
+                    {% endfor %}
+                </select>
+                <input type="hidden" name="days" value="{{ days }}">
+                <button type="submit" class="btn">تحديث</button>
+            </form>
+        </div>
+    </div>
+    <script>
+        // تحويل بيانات التاريخ من Pandas إلى تنسيق مناسب
+        const historyData = {{ history_data|tojson|safe }};
+        const symbol = "{{ symbol }}";
+        
+        // تحضير البيانات للرسم البياني
+        const dates = historyData.map(item => item.date);
+        const closePrices = historyData.map(item => item.close);
+        const ma50 = historyData.map(item => item.ma_50 || null); // معالجة القيم الفارغة
+        const ma200 = historyData.map(item => item.ma_200 || null);
+        
+        // إنشاء traces للرسم البياني
+        const trace1 = {
+            x: dates,
+            y: closePrices,
+            name: 'سعر الإغلاق',
+            type: 'line',
+            line: {color: '#3498db'}
+        };
+        
+        const trace2 = {
+            x: dates,
+            y: ma50,
+            name: '50 يوم MA',
+            line: { dash: 'dot', color: '#e74c3c' }
+        };
+        
+        const trace3 = {
+            x: dates,
+            y: ma200,
+            name: '200 يوم MA',
+            line: { dash: 'dashdot', color: '#2ecc71' }
+        };
+        
+        // إعدادات الرسم البياني
+        const layout = {
+            title: `المتوسطات المتحركة لـ ${symbol}`,
+            xaxis: { 
+                title: 'التاريخ',
+                type: 'date'
+            },
+            yaxis: { title: 'السعر' },
+            hovermode: 'x unified',
+            showlegend: true,
+            legend: {
+                orientation: 'h',
+                y: 1.1
+            },
+            margin: {
+                l: 50,
+                r: 50,
+                b: 50,
+                t: 50,
+                pad: 4
+            },
+            plot_bgcolor: '#f8f9fa',
+            paper_bgcolor: '#f8f9fa'
+        };
+        
+        // رسم المخطط
+        Plotly.newPlot('chart', [trace1, trace2, trace3], layout);
+        
+        // إضافة تأثيرات للرسوم البيانية عند التكبير
+        document.getElementById('chart').on('plotly_relayout', function(eventdata) {
+            console.log('تم تغيير حجم الرسم البياني', eventdata);
+        });
+    </script>
+</body>
+</html>

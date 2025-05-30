@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام تحليل الأسهم</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>نظام تحليل الأسهم المالية</h1>
+            <p>جلب البيانات مباشرة من Yahoo Finance</p>
+        </header>
+
+        <div class="cards-container">
+            <div class="card">
+                <h2>تحليل الدلتا</h2>
+                <p>تحليل التغير في أسعار الأسهم والمؤشرات خلال فترة محددة</p>
+                <a href="/delta?days=7" class="btn">عرض تحليل الدلتا</a>
+            </div>
+
+            <div class="card">
+                <h2>المتوسطات المتحركة</h2>
+                <p>اختر سهمًا لعرض السعر والتحليل اللحظي</p>
+                <select id="symbol-select">
+                    <option disabled selected>اختر سهمًا</option>
+                    {% for name, symbol in symbols.items() %}
+                    <option value="{{ symbol }}">{{ name }}</option>
+                    {% endfor %}
+                </select>
+                <div id="stock-data" style="margin-top: 1rem;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const symbolSelect = document.getElementById('symbol-select');
+        const stockDataDiv = document.getElementById('stock-data');
+
+        symbolSelect.addEventListener('change', () => {
+            const symbol = symbolSelect.value;
+
+            stockDataDiv.innerHTML = "جاري تحميل البيانات...";
+
+            fetch(`/get_stock_data?symbol=${symbol}&days=365`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        const stock = data.data;
+                        stockDataDiv.innerHTML = `
+                            <p><strong>السهم:</strong> ${stock.symbol}</p>
+                            <p><strong>السعر الحالي:</strong> ${stock.current_price.toFixed(2)} $</p>
+                            <p><strong>متوسط 50 يوم:</strong> ${stock.ma_50.toFixed(2)} $</p>
+                            <p><strong>متوسط 200 يوم:</strong> ${stock.ma_200.toFixed(2)} $</p>
+                        `;
+                    } else {
+                        stockDataDiv.innerHTML = `<p style="color:red;">${data.message}</p>`;
+                    }
+                })
+                .catch(error => {
+                    stockDataDiv.innerHTML = `<p style="color:red;">حدث خطأ في جلب البيانات.</p>`;
+                    console.error(error);
+                });
+        });
+    </script>
+</body>
+</html>
